@@ -44,21 +44,24 @@ f_makeData = function(dongCode, from, to) {
 
 f_plot = function(data, aptCodes, baseDate, pyungs) { 
   if (!missing(aptCodes)) {
-    if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
-  }
+    if (length(aptCodes) == 1 & aptCodes[1] == "") finalData = data.frame()
+    else if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
+  } 
   
   if (!missing(baseDate)) data = subset(data, SALE_DATE >= as.Date(baseDate, "%Y%m%d"))    
   
   if (!missing(pyungs)) {
     if (length(pyungs) > 0) data= subset(data, PYUNG %in% pyungs)             
-  }
+  } 
   
   p = ggplot(data=data, aes(x=SALE_DATE, y=SUM_AMT, 
-                            group=interaction(APT_CODE, PYUNG), 
-                            color=interaction(APT_CODE, PYUNG))) +
+                            group=interaction(APT_NAME, PYUNG), 
+                            color=interaction(APT_NAME, PYUNG))) +
     geom_smooth() +
     geom_point(size=2) +
     scale_x_date(breaks = date_breaks(width="1 year")) +
-    scale_y_continuous(breaks=seq(10000,90000,1000))
+    scale_y_continuous(breaks=seq(10000,90000,1000)) 
+#    theme(text=element_text(family="Gulim"))
+#    theme(text=element_text(family="Apple SD Gothic Neo"))
   return (p)
 }
