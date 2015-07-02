@@ -5,7 +5,7 @@ shinyUI(fluidPage(
     sidebarPanel(
       textInput("dongCode", "DongCode:", "2826010300"),
       sliderInput("period", "Period:", min=2006, max=2015, value=c(2013, 2015)), 
-      checkboxGroupInput("pyung", "Pyung", list("24-"=1, "28"=2, "33"=3, "40+"=4)),
+      checkboxGroupInput("pyung", "Pyung", list("24-"=24, "28"=28, "33"=33, "40+"=40)),
       uiOutput("ui") 
     ),
     mainPanel(plotOutput("plot"))
