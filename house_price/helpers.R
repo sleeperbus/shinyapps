@@ -60,8 +60,8 @@ f_plot = function(data, aptCodes, baseDate, pyungs) {
     geom_smooth() +
     geom_point(size=2) +
     scale_x_date(breaks = date_breaks(width="1 year")) +
-    scale_y_continuous(breaks=seq(10000,90000,1000)) 
-#    theme(text=element_text(family="Gulim"))
+    scale_y_continuous(breaks=seq(10000,90000,1000)) +
+    theme(text=element_text(family="Gulim"))
 #    theme(text=element_text(family="Apple SD Gothic Neo"))
   return (p)
 }
