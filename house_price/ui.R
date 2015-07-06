@@ -1,4 +1,5 @@
 library(shiny)
+library(ggvis)
 shinyUI(fluidPage(
   titlePanel("House Prices Tracker"),
   sidebarLayout(
@@ -11,6 +12,9 @@ shinyUI(fluidPage(
                          selected=33),
       uiOutput("ui") 
     ),
-    mainPanel(plotOutput("plot"))
+    mainPanel(
+#       plotOutput("plot")
+      ggvisOutput("plot")
+    )
   )
 ))

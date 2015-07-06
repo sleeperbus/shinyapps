@@ -2,6 +2,7 @@ library(jsonlite)
 library(stringr)
 library(ggplot2)
 library(scales)
+library(ggvis)
 
 f_makeData = function(dongCode) {
     apts = data.frame()
@@ -63,6 +64,24 @@ f_plot = function(data, aptCodes, baseDate, pyungs) {
     return (p)
 }
 
+f_plot2 = function(data, aptCodes, baseDate, pyungs) { 
+  if (!missing(aptCodes)) {
+    if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
+  }
+  
+  if (!missing(baseDate)) data = subset(data, SALE_DATE >= as.Date(baseDate, "%Y%m%d"))    
+  
+  if (!missing(pyungs)) {
+    if (length(pyungs) > 0) data= subset(data, PYUNG %in% pyungs)             
+  }
+  
+  p = ggvis(data, x = ~SALE_DATE, y = ~SUM_AMT) %>%
+    group_by(APT_NAME) %>%
+    layer_points(fill = ~factor(APT_NAME)) %>%
+    layer_smooths(stroke = ~factor(APT_NAME))
+  return (p)
+}
+
 
 # 검암동 
 gumamCode = "2826010300"
@@ -97,7 +116,8 @@ sector1 = subset(targets, APT_CODE %in% c("218940", "51017", "51021",  "51015", 
 # 신명2차 = 51011, 신명4차 = 73984
 sector2 = subset(targets, APT_CODE %in% c("51003", "218938", "218939", "51007", "51011", "73984"))
 
-x = f_plot(data=sector1, baseDate="20130101", pyungs=c(33))
+# x = f_plot(data=sector1, baseDate="20130101", pyungs=c(33))
+x = f_plot2(data=sector1, baseDate="20130101", pyungs=c(33))
 print(x)
 
 # gita
