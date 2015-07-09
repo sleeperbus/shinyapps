@@ -81,7 +81,8 @@ f_plot2 = function(data, aptCodes, baseDate, pyungs) {
   
   p = ggvis(data, x = ~SALE_DATE, y = ~SUM_AMT) %>%
     group_by(APT_NAME, PYUNG) %>%
-    layer_points(fill = ~factor(APT_NAME)) 
+    layer_points(fill = ~factor(APT_NAME)) %>%
+    add_tooltip(function(df) df$SUM_AMT)
 #     layer_smooths(span = 1, stroke = ~factor(APT_NAME))
   return (p)
 }
