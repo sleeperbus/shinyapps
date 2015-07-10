@@ -13,7 +13,6 @@ shinyUI(fluidPage(
       uiOutput("ui") 
     ),
     mainPanel(
-#       plotOutput("plot")
       ggvisOutput("plot")
     )
   )

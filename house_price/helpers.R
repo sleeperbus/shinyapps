@@ -67,23 +67,4 @@ f_plot = function(data, aptCodes, baseDate, pyungs) {
   return (p)
 }
 
-f_plot2 = function(data, aptCodes, baseDate, pyungs) { 
-  print("f_plot2 active")
-  if (!missing(aptCodes)) {
-    if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
-  }
-  
-  if (!missing(baseDate)) data = subset(data, SALE_DATE >= as.Date(baseDate, "%Y%m%d"))    
-  
-  if (!missing(pyungs)) {
-    if (length(pyungs) > 0) data= subset(data, PYUNG %in% pyungs)             
-  }
-  
-  p = ggvis(data, x = ~SALE_DATE, y = ~SUM_AMT) %>%
-    group_by(APT_NAME, PYUNG) %>%
-    layer_points(fill = ~factor(APT_NAME)) %>%
-    add_tooltip(function(df) df$SUM_AMT)
-#     layer_smooths(span = 1, stroke = ~factor(APT_NAME))
-  return (p)
-}
 
