@@ -22,22 +22,6 @@ shinyServer(function(input, output){
                        selected=uniqueApts[1,1])
   })    
   
-  f_plot2 = function(data, aptCodes, pyungs) { 
-    if (!missing(aptCodes)) {
-      if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
-    }  
-    
-    if (!missing(pyungs)) {
-      if (length(pyungs) > 0) data= subset(data, PYUNG %in% pyungs)             
-    }
-    
-    p = ggvis(data, x = ~SALE_DATE, y = ~SUM_AMT) %>%
-      group_by(APT_NAME, PYUNG) %>%
-      layer_points(fill = ~factor(APT_NAME)) %>%
-      add_tooltip(function(df) df$SUM_AMT)
-    return (p)
-  }
-  
   vis = reactive({
     print("ggvis plot active")
     apts = data()
