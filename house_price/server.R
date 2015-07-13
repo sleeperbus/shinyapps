@@ -1,10 +1,13 @@
 library(shiny)
 source("helpers.R")
 
+minYear = "2006"
+maxYear = "2015"
+
 shinyServer(function(input, output){ 
   data = reactive({
     print("get data active")
-    f_makeData(input$dongCode, input$period[1], input$period[2])    
+    f_makeData(input$dongCode, minYear, maxYear)
   })
 
   output$ui = renderUI({
@@ -20,7 +23,6 @@ shinyServer(function(input, output){
   })    
   
   f_plot2 = function(data, aptCodes, pyungs) { 
-    print("f_plot2 active")
     if (!missing(aptCodes)) {
       if (length(aptCodes) > 0) data= subset(data, APT_CODE %in% aptCodes)             
     }  
@@ -39,7 +41,21 @@ shinyServer(function(input, output){
   vis = reactive({
     print("ggvis plot active")
     apts = data()
-    f_plot2(data=apts, aptCodes=input$aptCodes, pyungs=input$pyung)    
+    aptCodes = input$aptCodes
+    pyungs = input$pyung
+    
+    result = subset(apts, SALE_YEAR >= input$period[1] & SALE_YEAR <= input$period[2])   
+    result = subset(result, APT_CODE %in% aptCodes)
+    result = subset(result, PYUNG %in% pyungs)
+    
+    ggvis(result, x=~SALE_DATE, y=~SUM_AMT) %>%
+      group_by(APT_NAME, PYUNG) %>%
+      layer_points(fill=~factor(APT_NAME), opacity:=0.4) %>%
+      layer_smooths(stroke = ~factor(APT_NAME)) %>%
+      add_tooltip(function(df) df$SUM_AMT) %>%
+      add_axis("x", title="매매시점") %>% 
+      add_axis("y", title="매매가격", title_offset=70) 
+#      add_legend(title="아파트")
   }) 
 
   vis %>% bind_shiny("plot")  
