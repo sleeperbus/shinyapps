@@ -39,7 +39,7 @@ shinyServer(function(input, output){
       add_tooltip(function(df) df$SUM_AMT) %>%
       add_axis("x", title="매매시점") %>% 
       add_axis("y", title="매매가격", title_offset=70) 
-#      add_legend(title="아파트")
+      add_legend(scales=c("fill", title="아파트")
   }) 
 
   vis %>% bind_shiny("plot")  
