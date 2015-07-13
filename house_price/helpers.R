@@ -25,7 +25,8 @@ f_makeData = function(dongCode, from, to) {
         apts = rbind(apts, tempApts) 
       }
     }
-  } 
+  }  
+  
   apts$SALE_MONTH = str_pad(apts$SALE_MONTH, 2, pad="0")
   apts$SALE_DAYS= str_pad(apts$SALE_DAYS, 2, pad="0")
   apts$SUM_AMT = as.numeric(gsub(",", "", apts$SUM_AMT))
@@ -40,6 +41,9 @@ f_makeData = function(dongCode, from, to) {
   apts[with(apts, AREA >= 80 & AREA < 90),]$PYUNG = 33
   apts[with(apts, AREA >= 90),]$PYUNG = 40
   apts$ENG_NAME = ""
+  apts$APT_NAME = factor(apts$APT_NAME)
+  apts$GROUP = do.call(paste0, list(apts$APT_NAME, "-", apts$PYUNG))
+  apts$GROUP = factor(apts$GROUP)
   return (apts)
 }
 

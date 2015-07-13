@@ -7,7 +7,8 @@ maxYear = "2015"
 shinyServer(function(input, output){ 
   data = reactive({
     print("get data active")
-    f_makeData(input$dongCode, minYear, maxYear)
+    data = f_makeData(input$dongCode, minYear, maxYear)
+    return(data)
   })
 
   output$ui = renderUI({
@@ -31,15 +32,21 @@ shinyServer(function(input, output){
     result = subset(apts, SALE_YEAR >= input$period[1] & SALE_YEAR <= input$period[2])   
     result = subset(result, APT_CODE %in% aptCodes)
     result = subset(result, PYUNG %in% pyungs)
+    result$APT_NAME = factor(result$APT_NAME, ordered=F)
+    result$PYUNG = factor(result$PYUNG)
+    result$GROUP = factor(result$GROUP)
     
     ggvis(result, x=~SALE_DATE, y=~SUM_AMT) %>%
-      group_by(APT_NAME, PYUNG) %>%
-      layer_points(fill=~factor(APT_NAME), opacity:=0.4) %>%
-      layer_smooths(stroke = ~factor(APT_NAME)) %>%
+      group_by(GROUP) %>%
+#       group_by(APT_NAME, PYUNG) %>%
+#       layer_points(fill=~APT_NAME, opacity:=0.4) %>%
+      layer_points(fill=~GROUP, opacity:=0.4) %>%
+      layer_smooths(stroke= ~GROUP) %>%
+#       layer_smooths(stroke= ~APT_NAME) %>%
       add_tooltip(function(df) df$SUM_AMT) %>%
       add_axis("x", title="매매시점") %>% 
       add_axis("y", title="매매가격", title_offset=70) 
-      add_legend(scales=c("fill", title="아파트")
+#       add_legend(scales=c("fill"), title="APT NAME")
   }) 
 
   vis %>% bind_shiny("plot")  
