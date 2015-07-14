@@ -1,16 +1,30 @@
 library(shiny)
 source("helpers.R")
 
+sido = readRDS("data/sido.rds")
+sido$sidoCode = as.character(sido$sidoCode)
+sido$sidoName = as.character(sido$sidoName)
+
 minYear = "2006"
 maxYear = "2015"
 
 shinyServer(function(input, output){ 
   data = reactive({
     print("get data active")
-    data = f_makeData(input$dongCode, minYear, maxYear)
+    data = f_makeData("2826010300", minYear, maxYear)
+#     data = f_makeData(input$dongCode, minYear, maxYear)
     return(data)
   })
-
+   
+  output$sido = renderUI({
+    str(sido)
+    codes = list()
+    codes = as.list(sido[,2])
+    names(codes) = sido[,1]
+    print(codes)
+    selectInput("sido", "Sido", choices=codes, selected=codes[1,1])
+  })
+  
   output$ui = renderUI({
     print("dynamic ui active")
     apts = data()
