@@ -42,7 +42,6 @@ shinyServer(function(input, output){
 #       layer_points(fill=~APT_NAME, opacity:=0.4) %>%
       layer_points(fill=~GROUP, opacity:=0.4) %>%
       layer_smooths(stroke= ~GROUP) %>%
-#       layer_smooths(stroke= ~APT_NAME) %>%
       add_tooltip(function(df) df$SUM_AMT) %>%
       add_axis("x", title="매매시점") %>% 
       add_axis("y", title="매매가격", title_offset=70) 
