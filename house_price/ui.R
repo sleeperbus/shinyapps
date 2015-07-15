@@ -20,7 +20,7 @@ shinyUI(fluidPage(
       selectInput("gugun", "구군", choices=list()),
 			br(),
       selectInput("dong", "동", choices=list()),
-      actionButton("refreshButton", "조회", icon("refresh"))
+      actionButton("refreshButton", "적용", icon("refresh"))
 		), 
 		column(3,
       sliderInput("period", "기간:", min=2006, max=2015, value=c(2010, 2015)),

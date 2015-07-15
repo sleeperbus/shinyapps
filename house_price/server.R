@@ -20,6 +20,19 @@ minYear = "2014"
 maxYear = "2015"
 
 shinyServer(function(input, output, clientData, session){ 
+  apts = data.frame()  
+  
+  newDongCode = eventReactive(input$refreshButton, {
+    print("newDongCode in")
+    input$dong
+  })
+  
+  data = reactive({
+    print("data in")
+    code = newDongCode()
+    print(code)
+    apts = f_makeData(code, minYear, maxYear) 
+  })
   
   output$aptNames = renderUI({
     print("aptNames in")
@@ -29,8 +42,10 @@ shinyServer(function(input, output, clientData, session){
     uniqueApts = uniqueApts[!duplicated(uniqueApts),]
     aptNames = as.list(uniqueApts[,2])
     names(aptNames) = uniqueApts[,1]
-    checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames,
-                       selected=uniqueApts[1,1])
+#     checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames,
+#                        selected=uniqueApts[1,1])
+    checkboxGroupInput("aptNames", "아파트를 선택하세요.", choices=aptNames)
+                       
   })    
   
   observe({
@@ -59,6 +74,7 @@ shinyServer(function(input, output, clientData, session){
   
   vis = reactive({
     print("vis in")
+    apts = data()
 #     if (nrow(apts) == 0) {
 #       apts = data.frame(SALE_DATE=c(strptime("19000101", "%Y%m%d")),
 #                         APT_CODE=c("00000000"), SALE_YEAR=c(1900),
@@ -84,12 +100,6 @@ shinyServer(function(input, output, clientData, session){
       add_axis("y", title="매매가격", title_offset=70) 
   }) 
 
-#   vis %>% bind_shiny("plot")  
-  data = eventReactive(input$refreshButton, {
-    print("data in")
-    apts = f_makeData(input$dong, minYear, maxYear)
-    if (nrow(apts > 0)) {vis %>% bind_shiny("plot")}
-    return(apts)
-  })
+  vis %>% bind_shiny("plot")  
 
 })
