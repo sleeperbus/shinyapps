@@ -1,5 +1,9 @@
 library(shiny)
 library(ggvis)
+sido = readRDS("data/sido.rds")
+sido$sidoCode = as.character(sido$sidoCode)
+sido$sidoName = as.character(sido$sidoName)
+
 shinyUI(fluidPage(
   titlePanel("House Prices Tracker"),
 	ggvisOutput("plot"),
