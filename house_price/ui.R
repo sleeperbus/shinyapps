@@ -14,7 +14,7 @@ shinyUI(fluidPage(
 			uiOutput("dong")
 		), 
 		column(3,
-      sliderInput("period", "Period:", min=2006, max=2015, value=c(2010, 2015))
+      sliderInput("period", "Period:", min=2006, max=2015, value=c(2010, 2015)),
       checkboxGroupInput("pyung", 
                          "Pyung", 
                          list("24-"=24, "28"=28, "33"=33, "40+"=40),

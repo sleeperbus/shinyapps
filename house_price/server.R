@@ -5,6 +5,17 @@ sido = readRDS("data/sido.rds")
 sido$sidoCode = as.character(sido$sidoCode)
 sido$sidoName = as.character(sido$sidoName)
 
+gugun = readRDS("data/gugun.rds")
+gugun$sidoCode = as.character(gugun$sidoCode)
+gugun$gugunCode = as.character(gugun$gugunCode)
+gugun$gugunName = as.character(gugun$gugunName)
+
+dong = readRDS("data/dong.rds")
+dong$sidoCode = as.character(dong$sidoCode)
+dong$gugunCode = as.character(dong$gugunCode)
+dong$dongCode = as.character(dong$dongCode)
+dong$dongName = as.character(dong$dongName) 
+
 minYear = "2006"
 maxYear = "2015"
 
@@ -16,12 +27,19 @@ shinyServer(function(input, output){
   })
    
   output$sido = renderUI({
-    str(sido)
     codes = list()
     codes = as.list(sido[,1])
     names(codes) = sido[,2]
-    print(codes)
     selectInput("sido", "Sido", choices=codes, selected=sido[1,1])
+  })
+  
+  output$gugun = renderUI({
+    codes = list()
+    print(input$sido)
+    selectedGugun = subset(gugun, sidoCode == input$sido)
+    codes = as.list(selectedGugun[,2])
+    names(codes) = selectedGugun[,3]
+    selectInput("gugun", "Gugun", choices=codes, selected=selectedGugun[1,2])   
   })
   
   output$aptNames = renderUI({
