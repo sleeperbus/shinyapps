@@ -16,57 +16,55 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-minYear = "2006"
+minYear = "2014"
 maxYear = "2015"
 
-shinyServer(function(input, output){ 
-  data = reactive({
-    print("get data active")
-		data = data.frame()
-		if (nchar(input$dong) > 0)
-	    data = f_makeData(input$dong, minYear, maxYear)
-    #data = f_makeData("2826010300", minYear, maxYear)
-    return(data)
-  })
-   
-  output$sido = renderUI({
-    codes = list()
-    codes = as.list(sido[,1])
-    names(codes) = sido[,2]
-    selectInput("sido", "Sido", choices=codes, selected=sido[1,1])
-  })
-  
-  output$gugun = renderUI({
-    codes = list()
-    selectedGugun = subset(gugun, sidoCode == input$sido)
-    codes = as.list(selectedGugun[,2])
-    names(codes) = selectedGugun[,3]
-    selectInput("gugun", "Gugun", choices=codes, selected=selectedGugun[1,2])   
-  })
-
-	output$dong = renderUI({
-		codes = list()
-		selectedDong = subset(dong, sido == input$sido & gugun == input$gugun)
-		codes = as.list(selectedDong[,3])
-		names(codes) = selectedDong[,4]
-		selectInput("dong", "Dong", choices=codes, selected=selectedDong[1,3])
-	})
+shinyServer(function(input, output, clientData, session){ 
   
   output$aptNames = renderUI({
-    print("dynamic ui active")
+    print("aptNames in")
     apts = data()
     aptNames = list()
     uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
     uniqueApts = uniqueApts[!duplicated(uniqueApts),]
     aptNames = as.list(uniqueApts[,2])
     names(aptNames) = uniqueApts[,1]
-    checkboxGroupInput("aptCodes", "Select APTs", choices=aptNames,
+    checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames,
                        selected=uniqueApts[1,1])
   })    
   
+  observe({
+    print("observe gugun in")
+    sidoCode = input$sido    
+    
+    codes = list()
+    selectedGugun = subset(gugun, sidoCode == input$sido)
+    codes = as.list(selectedGugun[,2])
+    names(codes) = selectedGugun[,3] 
+    updateSelectInput(session, "gugun", "구군", 
+                      choices=codes, selected=selectedGugun[1,2])     
+  })
+
+  observe({
+    print("observe dong in")
+    sidoCode = input$sido
+    gugunCode = input$gugun
+    
+    codes = list()
+    selectedDong = subset(dong, sidoCode == input$sido & gugunCode == input$gugun)
+    codes = as.list(selectedDong[,3])
+    names(codes) = selectedDong[,4]
+    updateSelectInput(session, "dong", "동", choices=codes, selected=selectedDong[1,3])  
+  })
+  
   vis = reactive({
-    print("ggvis plot active")
-    apts = data()
+    print("vis in")
+#     if (nrow(apts) == 0) {
+#       apts = data.frame(SALE_DATE=c(strptime("19000101", "%Y%m%d")),
+#                         APT_CODE=c("00000000"), SALE_YEAR=c(1900),
+#                         PYUNG=c(0), APT_NAME=c(""), GROUP=c(""),
+#                         SUM_AMT=c(0))
+#     }
     aptCodes = input$aptCodes
     pyungs = input$pyung
     
@@ -86,5 +84,12 @@ shinyServer(function(input, output){
       add_axis("y", title="매매가격", title_offset=70) 
   }) 
 
-  vis %>% bind_shiny("plot")  
+#   vis %>% bind_shiny("plot")  
+  data = eventReactive(input$refreshButton, {
+    print("data in")
+    apts = f_makeData(input$dong, minYear, maxYear)
+    if (nrow(apts > 0)) {vis %>% bind_shiny("plot")}
+    return(apts)
+  })
+
 })

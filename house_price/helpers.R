@@ -5,6 +5,7 @@ library(scales)
 library(ggvis)
 
 f_makeData = function(dongCode, from, to) {
+  print("f_makeData in")
   apts = data.frame()
   for (srhYear in from:to) {
     for (srhPeriod in 1:4) {

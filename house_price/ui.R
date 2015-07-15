@@ -1,8 +1,12 @@
 library(shiny)
 library(ggvis)
+
 sido = readRDS("data/sido.rds")
 sido$sidoCode = as.character(sido$sidoCode)
-sido$sidoName = as.character(sido$sidoName)
+sido$sidoName = as.character(sido$sidoName) 
+codes = list()
+codes = as.list(sido[,1])
+names(codes) = sido[,2]
 
 shinyUI(fluidPage(
   titlePanel("House Prices Tracker"),
@@ -10,22 +14,22 @@ shinyUI(fluidPage(
 	hr(),
 	fluidRow(
 		column(3, 
-			h4("Region"),
-			uiOutput("sido"),
+			h4("지역선택"),
+      selectInput("sido", "시도", choices=codes, selected=sido[1,1]),
 			br(),
-			uiOutput("gugun"),
+      selectInput("gugun", "구군", choices=list()),
 			br(),
-			uiOutput("dong")
+      selectInput("dong", "동", choices=list()),
+      actionButton("refreshButton", "조회", icon("refresh"))
 		), 
 		column(3,
-      sliderInput("period", "Period:", min=2006, max=2015, value=c(2010, 2015)),
+      sliderInput("period", "기간:", min=2006, max=2015, value=c(2010, 2015)),
       checkboxGroupInput("pyung", 
                          "Pyung", 
                          list("24-"=24, "28"=28, "33"=33, "40+"=40),
                          selected=33)
 		),
 		column(3, 
-			h4("Select APTs"),
 			uiOutput("aptNames")
 		)
 	) 
