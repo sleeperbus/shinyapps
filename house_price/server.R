@@ -22,7 +22,10 @@ maxYear = "2015"
 shinyServer(function(input, output){ 
   data = reactive({
     print("get data active")
-    data = f_makeData("2826010300", minYear, maxYear)
+		data = data.frame()
+		if (nchar(input$dong) > 0)
+	    data = f_makeData(input$dong, minYear, maxYear)
+    #data = f_makeData("2826010300", minYear, maxYear)
     return(data)
   })
    
@@ -35,12 +38,19 @@ shinyServer(function(input, output){
   
   output$gugun = renderUI({
     codes = list()
-    print(input$sido)
     selectedGugun = subset(gugun, sidoCode == input$sido)
     codes = as.list(selectedGugun[,2])
     names(codes) = selectedGugun[,3]
     selectInput("gugun", "Gugun", choices=codes, selected=selectedGugun[1,2])   
   })
+
+	output$dong = renderUI({
+		codes = list()
+		selectedDong = subset(dong, sido == input$sido & gugun == input$gugun)
+		codes = as.list(selectedDong[,3])
+		names(codes) = selectedDong[,4]
+		selectInput("dong", "Dong", choices=codes, selected=selectedDong[1,3])
+	})
   
   output$aptNames = renderUI({
     print("dynamic ui active")
