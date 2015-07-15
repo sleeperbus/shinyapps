@@ -19,10 +19,10 @@ shinyServer(function(input, output){
   output$sido = renderUI({
     str(sido)
     codes = list()
-    codes = as.list(sido[,2])
-    names(codes) = sido[,1]
+    codes = as.list(sido[,1])
+    names(codes) = sido[,2]
     print(codes)
-    selectInput("sido", "Sido", choices=codes, selected=codes[1,1])
+    selectInput("sido", "Sido", choices=codes, selected=sido[1,1])
   })
   
   output$ui = renderUI({
