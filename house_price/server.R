@@ -16,11 +16,7 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-minYear = "2006"
-maxYear = "2015"
-
 shinyServer(function(input, output, clientData, session){ 
-  apts = data.frame()  
   
   newDongCode = eventReactive(input$refreshButton, {
     print("newDongCode in")
@@ -41,15 +37,14 @@ shinyServer(function(input, output, clientData, session){
   output$aptNames = renderUI({
     print("aptNames in")
     apts = data() 
+		apts = subset(apts, PYUNG %in% input$pyung)
     aptNames = list()
     uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
     uniqueApts = uniqueApts[!duplicated(uniqueApts),]
     aptNames = as.list(uniqueApts[,2])
     names(aptNames) = uniqueApts[,1]
-#     checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames,
-#                        selected=uniqueApts[1,1])
-    checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames)
-                       
+    checkboxGroupInput("aptCodes", "아파트를 선택하세요.",
+			choices=aptNames) 
   })    
   
   observe({
