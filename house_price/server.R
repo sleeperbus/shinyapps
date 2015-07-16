@@ -16,7 +16,7 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-minYear = "2014"
+minYear = "2006"
 maxYear = "2015"
 
 shinyServer(function(input, output, clientData, session){ 
@@ -24,19 +24,23 @@ shinyServer(function(input, output, clientData, session){
   
   newDongCode = eventReactive(input$refreshButton, {
     print("newDongCode in")
+    print(paste("newDongCode is", input$dong))
     input$dong
   })
   
   data = reactive({
     print("data in")
-    code = newDongCode()
-    print(code)
-    apts = f_makeData(code, minYear, maxYear) 
+    code = ""
+    t = try(newDongCode())  
+    if ("try-error" %in% class(t)) code = "1168010300"
+    else code = newDongCode()
+    print(paste("selected dongCode is", code))
+    apts = f_makeData(code, input$period[1], input$period[2]) 
   })
   
   output$aptNames = renderUI({
     print("aptNames in")
-    apts = data()
+    apts = data() 
     aptNames = list()
     uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
     uniqueApts = uniqueApts[!duplicated(uniqueApts),]
@@ -44,7 +48,7 @@ shinyServer(function(input, output, clientData, session){
     names(aptNames) = uniqueApts[,1]
 #     checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames,
 #                        selected=uniqueApts[1,1])
-    checkboxGroupInput("aptNames", "아파트를 선택하세요.", choices=aptNames)
+    checkboxGroupInput("aptCodes", "아파트를 선택하세요.", choices=aptNames)
                        
   })    
   
@@ -74,13 +78,8 @@ shinyServer(function(input, output, clientData, session){
   
   vis = reactive({
     print("vis in")
+    print(df)
     apts = data()
-#     if (nrow(apts) == 0) {
-#       apts = data.frame(SALE_DATE=c(strptime("19000101", "%Y%m%d")),
-#                         APT_CODE=c("00000000"), SALE_YEAR=c(1900),
-#                         PYUNG=c(0), APT_NAME=c(""), GROUP=c(""),
-#                         SUM_AMT=c(0))
-#     }
     aptCodes = input$aptCodes
     pyungs = input$pyung
     
@@ -98,8 +97,6 @@ shinyServer(function(input, output, clientData, session){
       add_tooltip(function(df) df$SUM_AMT) %>%
       add_axis("x", title="매매시점") %>% 
       add_axis("y", title="매매가격", title_offset=70) 
-  }) 
-
-  vis %>% bind_shiny("plot")  
-
+  })  
+  vis %>% bind_shiny("plot")   
 })

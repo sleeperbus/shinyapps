@@ -23,7 +23,7 @@ shinyUI(fluidPage(
       actionButton("refreshButton", "적용", icon("refresh"))
 		), 
 		column(3,
-      sliderInput("period", "기간:", min=2006, max=2015, value=c(2010, 2015)),
+      sliderInput("period", "기간:", min=2006, max=2015, value=c(2013, 2015)),
       checkboxGroupInput("pyung", 
                          "Pyung", 
                          list("24-"=24, "28"=28, "33"=33, "40+"=40),
