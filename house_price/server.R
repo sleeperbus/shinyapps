@@ -16,7 +16,11 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
+minYear = "2006"
+maxYear = "2015"
+
 shinyServer(function(input, output, clientData, session){ 
+  apts = data.frame()  
   
   newDongCode = eventReactive(input$refreshButton, {
     print("newDongCode in")
@@ -37,14 +41,13 @@ shinyServer(function(input, output, clientData, session){
   output$aptNames = renderUI({
     print("aptNames in")
     apts = data() 
-		apts = subset(apts, PYUNG %in% input$pyung)
+    print(unique(apts$APT_NAME))
     aptNames = list()
     uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
     uniqueApts = uniqueApts[!duplicated(uniqueApts),]
     aptNames = as.list(uniqueApts[,2])
     names(aptNames) = uniqueApts[,1]
-    checkboxGroupInput("aptCodes", "아파트를 선택하세요.",
-			choices=aptNames) 
+    checkboxGroupInput("aptCodes", "", choices=aptNames) 
   })    
   
   observe({
@@ -73,7 +76,6 @@ shinyServer(function(input, output, clientData, session){
   
   vis = reactive({
     print("vis in")
-    print(df)
     apts = data()
     aptCodes = input$aptCodes
     pyungs = input$pyung
@@ -91,7 +93,7 @@ shinyServer(function(input, output, clientData, session){
       layer_smooths(stroke= ~GROUP) %>%
       add_tooltip(function(df) df$SUM_AMT) %>%
       add_axis("x", title="매매시점") %>% 
-      add_axis("y", title="매매가격", title_offset=70) 
+      add_axis("y", title="매매가격", title_offset=70)
   })  
   vis %>% bind_shiny("plot")   
 })

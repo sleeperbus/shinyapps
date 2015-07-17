@@ -16,9 +16,7 @@ shinyUI(fluidPage(
 		column(3, 
 			h4("지역선택"),
       selectInput("sido", "시도", choices=codes, selected=sido[1,1]),
-			br(),
       selectInput("gugun", "구군", choices=list()),
-			br(),
       selectInput("dong", "동", choices=list()),
       actionButton("refreshButton", "적용", icon("refresh"))
 		), 
@@ -26,7 +24,7 @@ shinyUI(fluidPage(
       sliderInput("period", "기간:", min=2006, max=2015, value=c(2013, 2015)),
       checkboxGroupInput("pyung", 
                          "Pyung", 
-                         list("24-"=24, "28"=28, "33"=33, "40+"=40),
+                         list("24-"=24, "28"=28, "33"=33, "38+"=38),
                          selected=33)
 		),
 		column(3, 
