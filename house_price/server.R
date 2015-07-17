@@ -78,13 +78,12 @@ shinyServer(function(input, output, clientData, session){
     print("vis in")
     apts = data()
     aptCodes = input$aptCodes
-    pyungs = input$pyung
+    realArea = input$realArea
     
     result = subset(apts, SALE_YEAR >= input$period[1] & SALE_YEAR <= input$period[2])
 		result = subset(result, APT_CODE %in% aptCodes)
-    result = subset(result, PYUNG %in% pyungs)
+    result = subset(result, REAL_AREA%in% realArea)
     result$APT_NAME = factor(result$APT_NAME, ordered=F)
-    result$PYUNG = factor(result$PYUNG)
     result$GROUP = factor(result$GROUP)
     
     ggvis(result, x=~SALE_DATE, y=~SUM_AMT) %>%

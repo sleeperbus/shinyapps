@@ -22,11 +22,11 @@ shinyUI(fluidPage(
 		), 
 		column(3,
       sliderInput("period", "기간:", min=2006, max=2015, value=c(2013, 2015)),
-      checkboxGroupInput("pyung", 
-                         "Pyung", 
-                         list("24-"=24, "28"=28, "33"=33, "38+"=38),
-                         selected=33)
-		),
+      checkboxGroupInput("realArea",  "전용면적",
+                         list("~35"=0, "36~40"=1, "41~50"=2, "51~60"=3,
+                              "61-70"=4, "71~80"=5, "81~90"=6,
+                              "91~100"=7, "101~"=8), selected=c(5,6)) 
+    ),
 		column(3, 
 			uiOutput("aptNames")
 		)
