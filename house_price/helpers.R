@@ -19,6 +19,7 @@ f_makeData = function(dongCode, from, to) {
 			if (nrow(prices) > 0) {
 				names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
 					"BUILD_YEAR", "BUBN")
+        aptInfo$DONG_CODE = dongCode
 				names(prices) = c("SALE_MONTH", "SUM_AMT", "SALE_DAYS", "APT_CODE", 
 					"FLOOR", "AREA")
 				tempApts = merge(aptInfo, prices, by="APT_CODE") 
