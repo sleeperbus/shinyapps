@@ -1,18 +1,15 @@
 library(jsonlite)
 library(stringr)
-library(ggplot2)
-library(scales)
 
-f_makeData = function(dongCode, from, to) {
-	print(paste("f_makeData in with dongCode", dongCode,
-		"from", from, "to", to))
-	apts = data.frame()
-	for (srhYear in from:to) {
-		for (srhPeriod in 1:4) {
+f_readUrl = function(dongCode, year, period) {
+	message(paste("now: ", dongCode, "-", year, "-", period))
+	data = tryCatch(
+		{
+			message(paste(year, "-", period))
 			url = paste0("http://rt.molit.go.kr/rtApt.do?cmd=getTradeAptLocal&dongCode=", 
-				dongCode, "&danjiCode=ALL&srhYear=", srhYear,
-				"&srhPeriod=", srhPeriod, "&gubunRadio2=1")
-			rawData = readLines(url, warn="F", encoding="UTF-8")
+				dongCode, "&danjiCode=ALL&srhYear=", year,
+				"&srhPeriod=", period, "&gubunRadio2=1") 
+			rawData = readLines(url, encoding="UTF-8")
 			data = fromJSON(rawData) 
 			aptInfo = as.data.frame(data[1])
 			prices = as.data.frame(data[2]) 
@@ -23,11 +20,36 @@ f_makeData = function(dongCode, from, to) {
 				names(prices) = c("SALE_MONTH", "SUM_AMT", "SALE_DAYS", "APT_CODE", 
 					"FLOOR", "AREA")
 				tempApts = merge(aptInfo, prices, by="APT_CODE") 
-				tempApts$SALE_YEAR = srhYear
-				apts = rbind(apts, tempApts) 
+				tempApts$SALE_YEAR = year
+				tempApts 
+			} else {
+				NULL
+			}
+		}, 
+		error = function(cond) {
+			message(paste(dongCode, year, "-", period, "failed."))
+			message(cond)
+			return(NA)
+		} 
+	)
+	return(data)
+}
+
+f_makeData = function(dongCode, from, to) {
+	print(paste("f_makeData in with dongCode", dongCode,
+		"from", from, "to", to))
+	apts = data.frame()
+	for (srhYear in from:to) {
+		for (srhPeriod in 1:4) {
+			tempApts = f_readUrl(dongCode, srhYear, srhPeriod)		
+
+			if (!is.null(tempApts)) {
+				apts = rbind(apts, tempApts)
 			}
 		}
 	}  
+
+	if (nrow(apts) == 0) return(NA)
 	
 	apts$SALE_MONTH = str_pad(apts$SALE_MONTH, 2, pad="0")
 	apts$SALE_DAYS= str_pad(apts$SALE_DAYS, 2, pad="0")
