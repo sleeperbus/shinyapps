@@ -1,55 +1,67 @@
 library(jsonlite)
 library(stringr)
 
-f_readUrl = function(dongCode, year, period) {
-	message(paste("now: ", dongCode, "-", year, "-", period))
-	data = tryCatch(
-		{
-			message(paste(year, "-", period))
-			url = paste0("http://rt.molit.go.kr/rtApt.do?cmd=getTradeAptLocal&dongCode=", 
-				dongCode, "&danjiCode=ALL&srhYear=", year,
-				"&srhPeriod=", period, "&gubunRadio2=1") 
-			rawData = readLines(url, encoding="UTF-8")
-			data = fromJSON(rawData) 
-			aptInfo = as.data.frame(data[1])
-			prices = as.data.frame(data[2]) 
-			if (nrow(prices) > 0) {
-				names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
-					"BUILD_YEAR", "BUBN")
-        aptInfo$DONG_CODE = dongCode
-				names(prices) = c("SALE_MONTH", "SUM_AMT", "SALE_DAYS", "APT_CODE", 
-					"FLOOR", "AREA")
-				tempApts = merge(aptInfo, prices, by="APT_CODE") 
-				tempApts$SALE_YEAR = year
-				tempApts 
-			} else {
-				NULL
-			}
-		}, 
-		error = function(cond) {
-			message(paste(dongCode, year, "-", period, "failed."))
-			message(cond)
-			return(NA)
-		} 
-	)
-	return(data)
+f_readUrl = function(
+	dongCode, year, period,
+	warning = function(w) {
+	  message(paste("w:", w))
+	  invokeRestart("updateTryCount")
+	},
+	error = function(e) {
+	  message(paste("e:", e))
+	  invokeRestart("updateTryCount")
+	} 
+) {
+  tryCount = 1 
+  while (tryCount <= 3) {
+    withRestarts(
+      tryCatch(
+        {
+#          message("trying to read,", dongCode, "-", year, "-", period)
+          url = paste0("http://rt.molit.go.kr/rtApt.do?", 
+                       "cmd=getTradeAptLocal&dongCode=", 
+                       dongCode, "&danjiCode=ALL&srhYear=", year,
+                       "&srhPeriod=", period, "&gubunRadio2=1") 
+          rawData = readLines(url, encoding="UTF-8")           
+          data = fromJSON(rawData) 
+          aptInfo = as.data.frame(data[1])
+          prices = as.data.frame(data[2]) 
+          if (nrow(prices) > 0) {
+            names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
+                               "BUILD_YEAR", "BUBN")
+            aptInfo$DONG_CODE = dongCode
+            names(prices) = c("SALE_MONTH", "SUM_AMT", "SALE_DAYS", "APT_CODE", 
+                              "FLOOR", "AREA")
+            tempApts = merge(aptInfo, prices, by="APT_CODE") 
+            tempApts$SALE_YEAR = year
+            return(tempApts)
+          } else {
+            return(NULL)
+          }          
+        },
+        warning = warning,
+        error = error
+      ),
+      updateTryCount = function() {
+        message(paste("retry", dongCode, year, period, "with tryCount:", tryCount)) 
+        tryCount <<- tryCount + 1
+      }
+    )
+  }
 }
 
 f_makeData = function(dongCode, from, to) {
-	print(paste("f_makeData in with dongCode", dongCode,
-		"from", from, "to", to))
+#	print(paste("f_makeData in with dongCode", dongCode,
+#		"from", from, "to", to))
 	apts = data.frame()
 	for (srhYear in from:to) {
 		for (srhPeriod in 1:4) {
-			tempApts = f_readUrl(dongCode, srhYear, srhPeriod)		
-
-			if (!is.null(tempApts)) {
-				apts = rbind(apts, tempApts)
-			}
+			tempApts = f_readUrl(dongCode, srhYear, srhPeriod)		 
+			apts = rbind(apts, tempApts)
 		}
 	}  
 
-	if (nrow(apts) == 0) return(NA)
+	if (nrow(apts) == 0) return(NULL)
 	
 	apts$SALE_MONTH = str_pad(apts$SALE_MONTH, 2, pad="0")
 	apts$SALE_DAYS= str_pad(apts$SALE_DAYS, 2, pad="0")
