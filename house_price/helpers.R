@@ -17,7 +17,7 @@ f_readUrl = function(
     withRestarts(
       tryCatch(
         {
-#          message("trying to read,", dongCode, "-", year, "-", period)
+         message("trying to read,", dongCode, "-", year, "-", period)
           url = paste0("http://rt.molit.go.kr/rtApt.do?", 
                        "cmd=getTradeAptLocal&dongCode=", 
                        dongCode, "&danjiCode=ALL&srhYear=", year,
@@ -51,8 +51,8 @@ f_readUrl = function(
 }
 
 f_makeData = function(dongCode, from, to) {
-#	print(paste("f_makeData in with dongCode", dongCode,
-#		"from", from, "to", to))
+	print(paste("f_makeData in with dongCode", dongCode,
+		"from", from, "to", to))
 	apts = data.frame()
 	for (srhYear in from:to) {
 		for (srhPeriod in 1:4) {
