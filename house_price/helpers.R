@@ -36,6 +36,7 @@ f_readUrl = function(
             tempApts$SALE_YEAR = year
             return(tempApts)
           } else {
+						message("f_readUrl no data found")
             return(NULL)
           }          
         },
@@ -50,19 +51,11 @@ f_readUrl = function(
   }
 }
 
-f_makeData = function(dongCode, from, to) {
-	print(paste("f_makeData in with dongCode", dongCode,
-		"from", from, "to", to))
-	apts = data.frame()
-	for (srhYear in from:to) {
-		for (srhPeriod in 1:4) {
-			tempApts = f_readUrl(dongCode, srhYear, srhPeriod)		 
-			apts = rbind(apts, tempApts)
-		}
-	}  
+f_getData = function(dongCode, year, period) {
+	apts = f_readUrl(dongCode, year, period)		 
+	if (is.null(apts)) return(NULL)
+#	if (nrow(apts) == 0) return(NULL)
 
-	if (nrow(apts) == 0) return(NULL)
-	
 	apts$SALE_MONTH = str_pad(apts$SALE_MONTH, 2, pad="0")
 	apts$SALE_DAYS= str_pad(apts$SALE_DAYS, 2, pad="0")
 	apts$SUM_AMT = as.numeric(gsub(",", "", apts$SUM_AMT))
@@ -99,6 +92,36 @@ f_makeData = function(dongCode, from, to) {
 	apts$APT_NAME = factor(apts$APT_NAME)
 	apts$GROUP = do.call(paste0, list(apts$APT_NAME, apts$REAL_AREA_DESC))
 	apts$GROUP = factor(apts$GROUP)
-	return (apts)
+	return (apts) 
 }
+
+
+f_makeData = function(dongCode, from, to) {
+	print(paste("f_makeData in with dongCode", dongCode,
+		"from", from, "to", to))
+	apts = data.frame()
+	for (srhYear in from:to) {
+		for (srhPeriod in 1:4) {
+			tempApts = f_getData(dongCode, srhYear, srhPeriod)		 
+			apts = rbind(apts, tempApts)
+		}
+	}  
+	return(apts) 
+}
+
+f_dataToFile = function(dongCode, from, to) {
+	for (srhYear in from:to) {
+		apts = data.frame()
+		for (srhPeriod in 1:4) {
+			tempApts = f_getData(dongCode, srhYear, srhPeriod)		 
+			apts = rbind(apts, tempApts) 
+		}
+		fileName = paste(paste(dongCode, srhYear, sep="_"), "rds", sep=".")
+		saveRDS(apts, paste("data", fileName, sep="/"))
+		message(paste("successfully write to", fileName))
+	}  
+}
+
+
+
 
