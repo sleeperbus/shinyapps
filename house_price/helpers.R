@@ -96,9 +96,7 @@ f_getData = function(dongCode, year, period) {
 }
 
 
-f_makeData = function(dongCode, from, to) {
-	print(paste("f_makeData in with dongCode", dongCode,
-		"from", from, "to", to))
+f_dongYearData = function(dongCode, from, to) {
 	apts = data.frame()
 	for (srhYear in from:to) {
 		for (srhPeriod in 1:4) {
@@ -109,7 +107,7 @@ f_makeData = function(dongCode, from, to) {
 	return(apts) 
 }
 
-f_dataToFile = function(dongCode, from, to) {
+f_dongToFile = function(dongCode, from, to) {
 	for (srhYear in from:to) {
 		apts = data.frame()
 		for (srhPeriod in 1:4) {

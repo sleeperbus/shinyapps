@@ -1,6 +1,7 @@
 library(shiny)
 source("helpers.R")
 
+
 sido = readRDS("data/sido.rds")
 sido$sidoCode = as.character(sido$sidoCode)
 sido$sidoName = as.character(sido$sidoName)
@@ -16,6 +17,7 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
+result = readRDS("data/result.RDS")
 minYear = "2006"
 maxYear = "2015"
 
@@ -28,14 +30,16 @@ shinyServer(function(input, output, clientData, session){
 		input$dong
 		})
 	
-	data = reactive({
+	data = reactive({ 
 		print("data in")
 		code = ""
 		t = try(newDongCode())  
 		if ("try-error" %in% class(t)) code = "1168010300"
 		else code = newDongCode()
-		print(paste("selected dongCode is", code))
-		apts = f_makeData(code, input$period[1], input$period[2]) 
+		message(paste("selected dongCode is", code))
+# 		apts = f_makeData(code, input$period[1], input$period[2]) 
+    apts = subset(result, DONG_CODE == code & SALE_YEAR >= input$period[1] & 
+                    SALE_YEAR <= input$period[2])
 		})
 	
 	output$aptNames = renderUI({

@@ -1,16 +1,22 @@
 library(data.table)
 source("helpers.R")
 
-dong = readRDS("data/dong.rds")
-seoulDong = subset(dong, sidoCode == "11")
-seoulSample = seoulDong[sample(10), ]
+sidos = readRDS("data/sido.rds")
+guguns = readRDS("data/gugun.rds")
+dongs = readRDS("data/dong.rds")
 
-apply(as.data.frame(dong[,3]), 1, f_dataToFile, 2006, 2015)
-#result = apply(as.data.frame(dong[1:10,3]), 1, f_makeData, 2014, 2014)
-#result = apply(as.data.frame(seoulSample[,3]), 1, f_makeData, 2015, 2015)
-#result = apply(as.data.frame(dong[,3]), 1, f_makeData, 2015, 2015)
-#result = do.call("rbind", result)
-#result = na.omit(result)
-#str(result)
+#apply(as.data.frame(dong[,3]), 1, f_dataToFile, 2006, 2015)
 
-#saveRDS(result, "data/result.RDS")
+for (curGugunCode in guguns[,2]) {
+  dongCodes = data.frame()
+  result = data.frame()
+  curDongs = subset(dongs, gugunCode == curGugunCode)
+  for (year in 2006:2006) {
+    result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, year)
+    result = do.call("rbind", result)
+    fileName = paste(paste(curGugunCode, year, sep="_"), "rds", sep=".")
+    saveRDS(result, paste("data", fileName, sep="/"))
+  }
+}
+
+
