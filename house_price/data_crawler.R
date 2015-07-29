@@ -1,4 +1,3 @@
-library(data.table)
 source("helpers.R")
 
 sidos = readRDS("data/sido.rds")

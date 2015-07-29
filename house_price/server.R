@@ -1,7 +1,6 @@
 library(shiny)
 source("helpers.R")
 
-
 sido = readRDS("data/sido.rds")
 sido$sidoCode = as.character(sido$sidoCode)
 sido$sidoName = as.character(sido$sidoName)
@@ -17,7 +16,6 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-result = readRDS("data/result.RDS")
 minYear = "2006"
 maxYear = "2015"
 
@@ -32,15 +30,29 @@ shinyServer(function(input, output, clientData, session){
 	
 	data = reactive({ 
 		print("data in")
-		code = ""
+    curGugunCode = ""
+		curDongCode = ""
 		t = try(newDongCode())  
-		if ("try-error" %in% class(t)) code = "1168010300"
-		else code = newDongCode()
-		message(paste("selected dongCode is", code))
-# 		apts = f_makeData(code, input$period[1], input$period[2]) 
-    apts = subset(result, DONG_CODE == code & SALE_YEAR >= input$period[1] & 
-                    SALE_YEAR <= input$period[2])
-		})
+		if ("try-error" %in% class(t)) {
+      curGugunCode = "11680"
+      curDongCode = "1168010300"
+		} else {
+      curGugunCode = input$gugun  
+      curDongCode = newDongCode() 
+		}
+		message(paste("selected dongCode is", curDongCode))
+    apts = data.frame()
+    for (year in input$period[1]:input$period[2]) {
+      fileName = paste(paste(curGugunCode, year, sep="_"), "rds", sep=".")
+      fileName = paste("data", fileName, sep="/")
+      if (file.exists(fileName)) {
+        yearApts = readRDS(fileName) 
+        apts = rbind(apts, yearApts)
+      }  
+    }  
+    apts = subset(apts, DONG_CODE == curDongCode)
+    return(apts)
+	})
 	
 	output$aptNames = renderUI({
 		print("aptNames in")
