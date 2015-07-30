@@ -22,7 +22,7 @@ maxYear = "2015"
 shinyServer(function(input, output, clientData, session){ 
 	apts = data.frame()  
 	
-	newDongCode = eventReactive(input$refreshButton, {
+	newDongCode = eventReactive(input$refreshButton, { 
 		print("newDongCode in")
 		print(paste("newDongCode is", input$dong))
 		input$dong
@@ -57,7 +57,6 @@ shinyServer(function(input, output, clientData, session){
 	output$aptNames = renderUI({
 		print("aptNames in")
 		apts = data() 
-		print(unique(apts$APT_NAME))
 		aptNames = list()
 		uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
 		uniqueApts = uniqueApts[!duplicated(uniqueApts),]
@@ -89,10 +88,11 @@ shinyServer(function(input, output, clientData, session){
 		names(codes) = selectedDong[,4]
 		updateSelectInput(session, "dong", "동", choices=codes, selected=selectedDong[1,3])  
 		})
-	
-	vis = reactive({
+  
+  observe({
 		print("vis in")
 		apts = data()
+    if (nrow(apts) == 0) return(NULL)
 		aptCodes = input$aptCodes
 		realArea = input$realArea
 		
@@ -105,10 +105,14 @@ shinyServer(function(input, output, clientData, session){
 		ggvis(result, x=~SALE_DATE, y=~SUM_AMT) %>%
 		group_by(GROUP) %>%
 		layer_points(fill=~GROUP, opacity:=0.4) %>%
-		layer_smooths(stroke= ~GROUP) %>%
+#     layer_model_predictions(model="loess", stroke=~GROUP) %>%
+		layer_smooths(span:=1, stroke= ~GROUP) %>%
+# 		layer_smooths(model="loess") %>%
 		add_tooltip(function(df) df$SUM_AMT) %>%
 		add_axis("x", title="매매시점") %>% 
-		add_axis("y", title="매매가격", title_offset=70)
+		add_axis("y", title="매매가격", title_offset=70) %>%
+    bind_shiny("plot")
+
 		})  
-	vis %>% bind_shiny("plot")   
+# 	vis %>% bind_shiny("plot")   
 	})
