@@ -9,7 +9,7 @@ codes = as.list(sido[,1])
 names(codes) = sido[,2]
 
 shinyUI(fluidPage(
-	titlePanel("House Prices Tracker"),
+	titlePanel("아파트 거래가 추이"),
 	ggvisOutput("plot"),
 	hr(),
 	fluidRow(

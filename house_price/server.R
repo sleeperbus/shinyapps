@@ -16,12 +16,8 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-minYear = "2006"
-maxYear = "2015"
-
 shinyServer(function(input, output, clientData, session){ 
-	apts = data.frame()  
-	
+  
 	newDongCode = eventReactive(input$refreshButton, { 
 		print("newDongCode in")
 		print(paste("newDongCode is", input$dong))
@@ -106,7 +102,7 @@ shinyServer(function(input, output, clientData, session){
 		group_by(GROUP) %>%
 		layer_points(fill=~GROUP, opacity:=0.4) %>%
 #     layer_model_predictions(model="loess", stroke=~GROUP) %>%
-		layer_smooths(span:=1, stroke= ~GROUP) %>%
+		layer_smooths(span=1, stroke= ~GROUP) %>%
 # 		layer_smooths(model="loess") %>%
 		add_tooltip(function(df) df$SUM_AMT) %>%
 		add_axis("x", title="매매시점") %>% 
