@@ -17,6 +17,12 @@ dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
 shinyServer(function(input, output, clientData, session){ 
+  tooltip = function(df) {
+#     amt = paste0("매매가: ", df$SUM_AMT)
+    dt = paste0("매매일: ", format(df$SALE_DATE, "%Y%m%d", trim=TRUE))
+#     dt = paste0("매매일: ", format(df$SALE_DATE, "%Y-%m-%d"))
+#     paste0(amt, dt, sep="<br />") 
+  }
   
 	newDongCode = eventReactive(input$refreshButton, { 
 		print("newDongCode in")
@@ -98,17 +104,14 @@ shinyServer(function(input, output, clientData, session){
 		result$APT_NAME = factor(result$APT_NAME, ordered=F)
 		result$GROUP = factor(result$GROUP)
 		
-		ggvis(result, x=~SALE_DATE, y=~SUM_AMT) %>%
+		ggvis(result, x=~SALE_DATE, y=~SUM_AMT, fill=~GROUP, stroke=~GROUP) %>%
 		group_by(GROUP) %>%
-		layer_points(fill=~GROUP, opacity:=0.4) %>%
-#     layer_model_predictions(model="loess", stroke=~GROUP) %>%
-		layer_smooths(span=1, stroke= ~GROUP) %>%
-# 		layer_smooths(model="loess") %>%
-		add_tooltip(function(df) df$SUM_AMT) %>%
+		layer_points(opacity:=0.4) %>%
+		layer_smooths(span=1) %>%
+# 		add_tooltip(function(df) df$SUM_AMT) %>%
+		add_tooltip(tooltip, "hover") %>%
 		add_axis("x", title="매매시점") %>% 
 		add_axis("y", title="매매가격", title_offset=70) %>%
     bind_shiny("plot")
-
 		})  
-# 	vis %>% bind_shiny("plot")   
 	})
