@@ -72,6 +72,7 @@ shinyServer(function(input, output, clientData, session){
 	observe({
 		print("observe gugun in")
 		sidoCode = input$sido    
+    message(paste("sidoCode is", sidoCode))
 		
 		codes = list()
 		selectedGugun = subset(gugun, sidoCode == input$sido)
@@ -85,6 +86,7 @@ shinyServer(function(input, output, clientData, session){
 		print("observe dong in")
 		sidoCode = input$sido
 		gugunCode = input$gugun
+    message(paste("sidoCode is", sidoCode, "gugunCode is", gugunCode))
 		
 		codes = list()
 		selectedDong = subset(dong, sidoCode == input$sido & gugunCode == input$gugun)
@@ -96,7 +98,8 @@ shinyServer(function(input, output, clientData, session){
   observe({
 		print("vis in")
 		apts = data()
-    if (nrow(apts) == 0) return(NULL)
+#     if (nrow(apts) == 0) return(NULL)
+    if (is.null(apts)) return(NULL)
 		aptCodes = input$aptCodes
 		realArea = input$realArea
 		
