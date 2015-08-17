@@ -10,7 +10,7 @@ for (curGugunCode in guguns[,2]) {
   dongCodes = data.frame()
   result = data.frame()
   curDongs = subset(dongs, gugunCode == curGugunCode)
-  for (year in 2006:2006) {
+  for (year in 2015:2015) {
     result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, year)
     result = do.call("rbind", result)
     fileName = paste(paste(curGugunCode, year, sep="_"), "rds", sep=".")
