@@ -10,7 +10,8 @@ names(codes) = sido[,2]
 
 shinyUI(fluidPage(
 	titlePanel("아파트 거래가 추이"),
-	ggvisOutput("plot"),
+  fluidRow(column(7, ggvisOutput("plot"))),
+# 	ggvisOutput("plot"),
 	hr(),
 	fluidRow(
 		column(3, 
