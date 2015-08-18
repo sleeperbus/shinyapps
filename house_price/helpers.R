@@ -1,6 +1,10 @@
 library(jsonlite)
 library(stringr)
 
+sidos = readRDS("data/sido.rds")
+guguns = readRDS("data/gugun.rds")
+dongs = readRDS("data/dong.rds")
+
 f_readUrl = function(
 	qryType, dongCode, year, period,
 	warning = function(w) {
@@ -161,6 +165,17 @@ f_dongToFile = function(dongCode, from, to, f_name) {
 	}  
 }
 
-
-
-
+f_crawler = function(from, to, prefix, f_name) {
+  for (curGugunCode in guguns[,2]) {
+    dongCodes = data.frame()
+    result = data.frame()
+    curDongs = subset(dongs, gugunCode == curGugunCode)
+    for (year in from:to) {
+      result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, 
+                     year, f_name)
+      result = do.call("rbind", result)
+      fileName = paste(paste(prefix, curGugunCode, year, sep="_"), "rds", sep=".")
+      saveRDS(result, file.path("data", fileName))
+    }
+  } 
+}
