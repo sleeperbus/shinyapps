@@ -98,7 +98,7 @@ shinyServer(function(input, output, clientData, session){
   observe({
 		print("vis in")
 		apts = data()
-#     if (nrow(apts) == 0) return(NULL)
+		
     if (is.null(apts)) return(NULL)
 		aptCodes = input$aptCodes
 		realArea = input$realArea
@@ -109,7 +109,7 @@ shinyServer(function(input, output, clientData, session){
 		result$APT_NAME = factor(result$APT_NAME, ordered=F)
 		result$GROUP = factor(result$GROUP)
 		
-		ggvis(result, x=~SALE_DATE, y=~SUM_AMT, fill=~GROUP, stroke=~GROUP) %>%
+		ggvis(result, x=~SALE_DATE, y=~TRADE_AMT, fill=~GROUP, stroke=~GROUP) %>%
 		layer_points(opacity:=0.4, key :=~ID) %>%
 		add_tooltip(tooltip, "hover") %>%
 		group_by(GROUP) %>%

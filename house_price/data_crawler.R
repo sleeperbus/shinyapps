@@ -11,11 +11,24 @@ for (curGugunCode in guguns[,2]) {
   result = data.frame()
   curDongs = subset(dongs, gugunCode == curGugunCode)
   for (year in 2015:2015) {
-    result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, year)
+    result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, year, f_getTrade)
     result = do.call("rbind", result)
     fileName = paste(paste(curGugunCode, year, sep="_"), "rds", sep=".")
-    saveRDS(result, paste("data", fileName, sep="/"))
+    saveRDS(result, file.path("data", fileName))
   }
 }
+
+for (curGugunCode in guguns[,2]) {
+  dongCodes = data.frame()
+  result = data.frame()
+  curDongs = subset(dongs, gugunCode == curGugunCode)
+  for (year in 2015:2015) {
+    result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, year, f_getRent)
+    result = do.call("rbind", result)
+    fileName = paste(paste("r_", curGugunCode, year, sep="_"), "rds", sep=".")
+    saveRDS(result, file.path("data", fileName))
+  }
+}
+
 
 
