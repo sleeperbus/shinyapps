@@ -116,9 +116,8 @@ f_getRent = function(dongCode, year, period) {
   apts$TRADE_AMT= as.numeric(gsub(",", "", apts$TRADE_AMT))
   apts$MONTHLY = as.numeric(gsub(",", "", apts$MONTHLY))
   apts$TOOL_TIP = ""  
-  tooltipHeader = c("아파트", "전용면적: ", "보증금", "거래일")
-  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), TRADE_AMT,  SALE_DATE, sep="/"))  
-  msg = with(apts, paste0())
+  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), TRADE_AMT,  
+                                   SALE_DATE, sep="/"))  
   return(apts)  
 }
 
@@ -146,7 +145,7 @@ f_getTrade = function(dongCode, year, period) {
   
   apts$TRADE_AMT = as.numeric(gsub(",", "", apts$TRADE_AMT))
   apts$TOOL_TIP = ""  
-  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), SUM_AMT, 
+  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), TRADE_AMT, 
                                    SALE_DATE, sep="/")) 
   
   return (apts) 

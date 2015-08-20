@@ -26,7 +26,7 @@ str(rentDong)
 yearData = f_dongYearData(dong$dongCode[1], 2015, 2015, f_getRent)
 
 # 툴팁 
-testDong = dongs[dongs$gugunCode == "45140", ]
+testDong = dong[dong$gugunCode == "45140", ]
 testDong = testDong[with(testDong, order(dongCode)),]
 codes = c("시도코드", "구군코드", "동코드", "동이름")
 f_1 = function(x) {
@@ -39,6 +39,19 @@ testDong$TOOLTIP = x$V1
 paste0(codes, ": ", format(testDong[1,]), collapse = "<br />")
 f_1(testDong[1,])
 
+# 데이터 변환 SUM_AMT => TRADE_AMT 
+testGugun = readRDS("data/11110_2006.rds")
+testGugun$TRADE_AMT = testGugun$SUM_AMT
+testGugun$SUM_AMT = NULL
+names(testGugun)
 
-
-
+dataPath = "data"
+for (fileName in dir(dataPath)) {
+  if (fileName != "sido.rds" & fileName != "gugun.rds" & fileName != "dong.rds") {
+    filePath = file.path(dataPath, fileName)  
+    df = readRDS(filePath)
+    df$TRADE_AMT = df$SUM_AMT
+    df$SUM_AMT = NULL
+    saveRDS(df, filePath)
+  }
+}

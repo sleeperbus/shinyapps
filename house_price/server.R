@@ -1,5 +1,4 @@
 library(shiny)
-source("helpers.R")
 
 sido = readRDS("data/sido.rds")
 sido$sidoCode = as.character(sido$sidoCode)
@@ -16,12 +15,23 @@ dong$gugunCode = as.character(dong$gugunCode)
 dong$dongCode = as.character(dong$dongCode)
 dong$dongName = as.character(dong$dongName) 
 
-shinyServer(function(input, output, clientData, session){ 
+shinyServer(function(input, output, clientData, session){  
+#   tooltip = function(df) {
+#     if (is.null(df)) return(NULL)
+#     apts = data()
+#     row = apts[apts$ID == df$ID,]
+#     return(row$TOOL_TIP)
+#   }
+  
   tooltip = function(df) {
     if (is.null(df)) return(NULL)
     apts = data()
-    row = apts[apts$ID == df$ID,]
-    return(row$TOOL_TIP)
+    codes = c("아파트", "전용면적", "매매가", "매매일")
+    row = apts[apts$ID == df$ID, c("APT_NAME", "AREA", "TRADE_AMT", "SALE_DATE")]
+    if (nrow(row) > 0)
+      msg = paste0(codes, ": ", format(row), collapse = "<br />") 
+    else msg = NULL
+    return(msg)
   }
   
 	newDongCode = eventReactive(input$refreshButton, { 
@@ -31,7 +41,6 @@ shinyServer(function(input, output, clientData, session){
 		})
 	
 	data = reactive({ 
-		print("data in")
     curGugunCode = ""
 		curDongCode = ""
 		t = try(newDongCode())  
@@ -45,7 +54,7 @@ shinyServer(function(input, output, clientData, session){
 		message(paste("selected dongCode is", curDongCode))
     apts = data.frame()
     for (year in input$period[1]:input$period[2]) {
-      fileName = paste(paste(curGugunCode, year, sep="_"), "rds", sep=".")
+      fileName = paste(paste("t", curGugunCode, year, sep="_"), "rds", sep=".")
       fileName = paste("data", fileName, sep="/")
       if (file.exists(fileName)) {
         yearApts = readRDS(fileName) 
