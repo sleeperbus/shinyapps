@@ -14,44 +14,44 @@ level(logger) = "INFO"
 # 국토부 실거래가 사이트에 접속해서 데이터를 가져온다.
 # qryType t 매매, r 전월세
 f_readUrl = function(
-	qryType, dongCode, year, period,
-	warning = function(w) {
+  qryType, dongCode, year, period,
+  warning = function(w) {
     warn(logger, w)
-	  invokeRestart("updateTryCount")
-	},
-	error = function(e) {
+    invokeRestart("updateTryCount")
+  },
+  error = function(e) {
     error(logger, e)
-	  invokeRestart("updateTryCount")
-	} 
+    invokeRestart("updateTryCount")
+  } 
 ) {
   tryCount = 1 
   while (tryCount <= 10) {
     withRestarts(
       tryCatch(
-        {
-          msg = paste0("tring to read, ", dongCode, "-", year, "-", period)  
-          debug(logger, msg)
-          url = paste0("http://rt.molit.go.kr/rtApt.do?", 
-                       "cmd=get", qryType, "AptLocal&dongCode=", 
-                       dongCode, "&danjiCode=ALL&srhYear=", year,
-                       "&srhPeriod=", period, "&gubunRadio2=1") 
-          rawData = readLines(url, encoding="UTF-8")           
-          data = fromJSON(rawData) 
-          return(data)
-        },
-        warning = warning,
-        error = error
+{
+  msg = paste0("tring to read, ", dongCode, "-", year, "-", period)  
+  debug(logger, msg)
+  url = paste0("http://rt.molit.go.kr/rtApt.do?", 
+               "cmd=get", qryType, "AptLocal&dongCode=", 
+               dongCode, "&danjiCode=ALL&srhYear=", year,
+               "&srhPeriod=", period, "&gubunRadio2=1") 
+  rawData = readLines(url, encoding="UTF-8")           
+  data = fromJSON(rawData) 
+  return(data)
+},
+warning = warning,
+error = error
       ),
-      updateTryCount = function() {
-        msg = paste(qryType, dongCode, year, period, sep = "-")
-        msg = paste0(msg, ", at tryCount: ", tryCount)
-        info(logger, msg)  
-        tryCount <<- tryCount + 1
-      }
+updateTryCount = function() {
+  msg = paste(qryType, dongCode, year, period, sep = "-")
+  msg = paste0(msg, ", at tryCount: ", tryCount)
+  info(logger, msg)  
+  tryCount <<- tryCount + 1
+}
     )
   }
-  # tryCount 가 3보다 커지면 그냥 NULL 을 반환
-  return(NULL)
+# tryCount 가 3보다 커지면 그냥 NULL 을 반환
+return(NULL)
 }
 
 # 아파트 정보에 추가적인 정보를 생성한다.
@@ -91,97 +91,100 @@ f_addInfo = function(apts) {
   return (apts)  
 }
 
+# 전월세 데이터를 가져온다.
 f_getRent = function(dongCode, year, period) {
-	data = f_readUrl("Rent", dongCode, year, period)		 
-	if (is.null(data)) return(NULL)
-	aptInfo = as.data.frame(data[1])
-	prices = as.data.frame(data[2]) 
-	apts = data.frame()
-	if (nrow(prices) > 0) {
-	  names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
-	                     "BUILD_YEAR", "BUBN")
-	  aptInfo$DONG_CODE = dongCode
-	  names(prices) = c("SALE_MONTH", "SALE_DAYS", "APT_CODE", "FLOOR", "MONTHLY",
-	                    "AREA", "DEPOSIT")
-	  apts = merge(aptInfo, prices, by="APT_CODE") 
-	  apts$SALE_YEAR = year
-	} else {
+  data = f_readUrl("Rent", dongCode, year, period)		 
+  if (is.null(data)) return(NULL)
+  aptInfo = as.data.frame(data[1])
+  prices = as.data.frame(data[2]) 
+  apts = data.frame()
+  if (nrow(prices) > 0) {
+    names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
+                       "BUILD_YEAR", "BUBN")
+    aptInfo$DONG_CODE = dongCode
+    names(prices) = c("SALE_MONTH", "SALE_DAYS", "APT_CODE", "FLOOR", "MONTHLY",
+                      "AREA", "TRADE_AMT")
+    apts = merge(aptInfo, prices, by="APT_CODE") 
+    apts$SALE_YEAR = year
+  } else {
     debug(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
-	  return(NULL)
-	}          	
-	
+    return(NULL)
+  }          	
+  
   apts = f_addInfo(apts)
   
-  apts$DEPOSIT = as.numeric(gsub(",", "", apts$DEPOSIT))
+  apts$TRADE_AMT= as.numeric(gsub(",", "", apts$TRADE_AMT))
   apts$MONTHLY = as.numeric(gsub(",", "", apts$MONTHLY))
   apts$TOOL_TIP = ""  
-  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), DEPOSIT, 
-                                   SALE_DATE, sep="/"))  
-	return(apts)  
+  tooltipHeader = c("아파트", "전용면적: ", "보증금", "거래일")
+  apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), TRADE_AMT,  SALE_DATE, sep="/"))  
+  msg = with(apts, paste0())
+  return(apts)  
 }
 
+# 매매 데이터를 가져온다.
 f_getTrade = function(dongCode, year, period) {
-	data = f_readUrl("Trade", dongCode, year, period)		 
-	if (is.null(data)) return(NULL)
-	
-	aptInfo = as.data.frame(data[1])
-	prices = as.data.frame(data[2]) 
-	apts = data.frame()
-	if (nrow(prices) > 0) {
-	  names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
-	                     "BUILD_YEAR", "BUBN")
-	  aptInfo$DONG_CODE = dongCode
-	  names(prices) = c("SALE_MONTH", "TRADE_AMT", "SALE_DAYS", "APT_CODE", 
-	                    "FLOOR", "AREA")
-	  apts = merge(aptInfo, prices, by="APT_CODE") 
-	  apts$SALE_YEAR = year
-	} else {
+  data = f_readUrl("Trade", dongCode, year, period)		 
+  if (is.null(data)) return(NULL)
+  
+  aptInfo = as.data.frame(data[1])
+  prices = as.data.frame(data[2]) 
+  apts = data.frame()
+  if (nrow(prices) > 0) {
+    names(aptInfo) = c("APT_NAME", "AREA_CNT", "APT_CODE", "BORM", 
+                       "BUILD_YEAR", "BUBN")
+    aptInfo$DONG_CODE = dongCode
+    names(prices) = c("SALE_MONTH", "TRADE_AMT", "SALE_DAYS", "APT_CODE", 
+                      "FLOOR", "AREA")
+    apts = merge(aptInfo, prices, by="APT_CODE") 
+    apts$SALE_YEAR = year
+  } else {
     debug(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
-	  return(NULL)
-	}          	
+    return(NULL)
+  }          	
   apts = f_addInfo(apts)
   
   apts$TRADE_AMT = as.numeric(gsub(",", "", apts$TRADE_AMT))
   apts$TOOL_TIP = ""  
   apts$TOOL_TIP = with(apts, paste(APT_NAME, paste0(AREA, "m2"), SUM_AMT, 
                                    SALE_DATE, sep="/")) 
-	
-	return (apts) 
+  
+  return (apts) 
 }
 
-# 연도별 데이터를 생성한다.
+# 특정 동코드의 연도별 데이터를 생성한다.
 f_dongYearData = function(dongCode, from, to, f_name) {
-	apts = data.frame()
-	for (srhYear in from:to) {
-		for (srhPeriod in 1:4) {
-			tempApts = f_name(dongCode, srhYear, srhPeriod)		 
-			apts = rbind(apts, tempApts)
-		}
-	}  
-	return(apts) 
+  apts = data.frame()
+  for (srhYear in from:to) {
+    for (srhPeriod in 1:4) {
+      tempApts = f_name(dongCode, srhYear, srhPeriod)		 
+      apts = rbind(apts, tempApts)
+    }
+  }  
+  return(apts) 
 }
 
 # 조회된 데이터를 파일로 저장
 f_dongToFile = function(dongCode, from, to, f_name) {
-	for (srhYear in from:to) {
-		apts = data.frame()
-		for (srhPeriod in 1:4) {
-			tempApts = f_name(dongCode, srhYear, srhPeriod)		 
-			apts = rbind(apts, tempApts) 
-		}
-		fileName = paste(paste(dongCode, srhYear, sep="_"), "rds", sep=".")
-		saveRDS(apts, paste("data", fileName, sep="/"))
-		msg = paste("successfully write to", fileName)
-		debug(logger, msg)
-	}  
+  for (srhYear in from:to) {
+    apts = data.frame()
+    for (srhPeriod in 1:4) {
+      tempApts = f_name(dongCode, srhYear, srhPeriod)		 
+      apts = rbind(apts, tempApts) 
+    }
+    fileName = paste(paste(dongCode, srhYear, sep="_"), "rds", sep=".")
+    saveRDS(apts, paste("data", fileName, sep="/"))
+    msg = paste("successfully write to", fileName)
+    debug(logger, msg)
+  }  
 }
 
+# 대량의 데이터를 가져온다.
 f_crawler = function(fromYear, toYear, prefix, f_name) { 
-	msg = paste(fromYear, "~" , toYear, prefix, "started", sep = " ")
-	info(logger, msg)
-	startTime = Sys.time()
-  for (curGugunCode in guguns[,2]) {
-	
+  msg = paste(fromYear, "~" , toYear, prefix, "started", sep = " ")
+  info(logger, msg)
+  startTime = Sys.time()
+  for (curGugunCode in guguns[,2]) { 
     dongCodes = data.frame()
     result = data.frame()
     curDongs = subset(dongs, gugunCode == curGugunCode)
@@ -192,27 +195,27 @@ f_crawler = function(fromYear, toYear, prefix, f_name) {
       fileName = paste(paste(prefix, curGugunCode, year, sep="_"), "rds", sep=".")
       saveRDS(result, file.path("data", fileName))
     }
-		endTime = Sys.time()
-
-		gugunIdx = which(curGugunCode == guguns$gugunCode)
-		pct = round((gugunIdx / nrow(guguns)) * 100, 2)
-
-		timeTakes = difftime(endTime, startTime)
-		remainTimes = (nrow(guguns) - gugunIdx) * timeTakes
-
-		msgTimeTakes = round(as.numeric(timeTakes, units = "mins"))
-		msg = paste(curGugunCode, "takes", msgTimeTakes, "mins")
-		message(msg)
-		info(logger, msg)
-
-		msgRemainTimes = round(as.numeric(remainTimes, units = "hours"), digits = 2)
-		msg = paste("Times remains:", msgRemainTimes, "hours")
-		message(msg)
-		info(logger, msg)
-
-		message(paste0(pct, "% done.")) 
-		info(logger, paste0(pct, "% done.")) 
+    endTime = Sys.time()
+    
+    gugunIdx = which(curGugunCode == guguns$gugunCode)
+    pct = round((gugunIdx / nrow(guguns)) * 100, 2)
+    
+    timeTakes = difftime(endTime, startTime)
+    remainTimes = (nrow(guguns) - gugunIdx) * timeTakes
+    
+    msgTimeTakes = round(as.numeric(timeTakes, units = "mins"))
+    msg = paste(curGugunCode, "takes", msgTimeTakes, "mins")
+    message(msg)
+    info(logger, msg)
+    
+    msgRemainTimes = round(as.numeric(remainTimes, units = "hours"), digits = 2)
+    msg = paste("Times remains:", msgRemainTimes, "hours")
+    message(msg)
+    info(logger, msg)
+    
+    message(paste0(pct, "% done.")) 
+    info(logger, paste0(pct, "% done.")) 
   } 
-	msg = paste(from, "~" , to, prefix, "ended", sep = " ")
-	info(logger, msg)
+  msg = paste(from, "~" , to, prefix, "ended", sep = " ")
+  info(logger, msg)
 }

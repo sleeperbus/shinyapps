@@ -24,3 +24,21 @@ str(rentDong)
 
 # 데이터 가져오기
 yearData = f_dongYearData(dong$dongCode[1], 2015, 2015, f_getRent)
+
+# 툴팁 
+testDong = dongs[dongs$gugunCode == "45140", ]
+testDong = testDong[with(testDong, order(dongCode)),]
+codes = c("시도코드", "구군코드", "동코드", "동이름")
+f_1 = function(x) {
+  paste0(codes, ": ", format(x), collapse="<br />")
+}
+
+x = ddply(testDong, .(dongCode), f_1)
+testDong$TOOLTIP = x$V1
+
+paste0(codes, ": ", format(testDong[1,]), collapse = "<br />")
+f_1(testDong[1,])
+
+
+
+
