@@ -1,27 +1,36 @@
 library(jsonlite)
 library(stringr)
+library(log4r)
 
 sidos = readRDS("data/sido.rds")
 guguns = readRDS("data/gugun.rds")
 dongs = readRDS("data/dong.rds")
 
+logFileName = file.path(getwd(), paste0("log_", format(Sys.Date(), "%Y%m%d"), ".log"))
+logger = create.logger()
+logfile(logger) = logFileName
+level(logger) = "INFO"
+
+# 국토부 실거래가 사이트에 접속해서 데이터를 가져온다.
+# qryType t 매매, r 전월세
 f_readUrl = function(
 	qryType, dongCode, year, period,
 	warning = function(w) {
-	  message(paste("w:", w))
+    warn(logger, w)
 	  invokeRestart("updateTryCount")
 	},
 	error = function(e) {
-	  message(paste("e:", e))
+    error(logger, e)
 	  invokeRestart("updateTryCount")
 	} 
 ) {
   tryCount = 1 
-  while (tryCount <= 3) {
+  while (tryCount <= 10) {
     withRestarts(
       tryCatch(
         {
-         message("trying to read,", dongCode, "-", year, "-", period)
+          msg = paste0("tring to read, ", dongCode, "-", year, "-", period)  
+          debug(logger, msg)
           url = paste0("http://rt.molit.go.kr/rtApt.do?", 
                        "cmd=get", qryType, "AptLocal&dongCode=", 
                        dongCode, "&danjiCode=ALL&srhYear=", year,
@@ -34,7 +43,9 @@ f_readUrl = function(
         error = error
       ),
       updateTryCount = function() {
-        message(paste("retry", dongCode, year, period, "with tryCount:", tryCount)) 
+        msg = paste(qryType, dongCode, year, period, sep = "-")
+        msg = paste0(msg, ", at tryCount: ", tryCount)
+        info(logger, msg)  
         tryCount <<- tryCount + 1
       }
     )
@@ -74,7 +85,6 @@ f_addInfo = function(apts) {
   apts[which(apts$AREA >= 101), c("REAL_AREA")]  = 8
   apts[which(apts$AREA >= 101), c("REAL_AREA_DESC")] = "(101~)"
   
-  
   apts$APT_NAME = factor(apts$APT_NAME)
   apts$GROUP = do.call(paste0, list(apts$APT_NAME, apts$REAL_AREA_DESC))
   apts$GROUP = factor(apts$GROUP)
@@ -96,7 +106,7 @@ f_getRent = function(dongCode, year, period) {
 	  apts = merge(aptInfo, prices, by="APT_CODE") 
 	  apts$SALE_YEAR = year
 	} else {
-	  message("there is no price data.")
+    info(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
 	  return(NULL)
 	}          	
 	
@@ -126,7 +136,7 @@ f_getTrade = function(dongCode, year, period) {
 	  apts = merge(aptInfo, prices, by="APT_CODE") 
 	  apts$SALE_YEAR = year
 	} else {
-	  message("there is no price data.")
+    info(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
 	  return(NULL)
 	}          	
   apts = f_addInfo(apts)
@@ -161,11 +171,15 @@ f_dongToFile = function(dongCode, from, to, f_name) {
 		}
 		fileName = paste(paste(dongCode, srhYear, sep="_"), "rds", sep=".")
 		saveRDS(apts, paste("data", fileName, sep="/"))
-		message(paste("successfully write to", fileName))
+		debug(info, paste("successfully write to", fileName))
 	}  
 }
 
-f_crawler = function(from, to, prefix, f_name) {
+f_crawler = function(from, to, prefix, f_name) { 
+  logFileName = file.path(getwd(), paste0(prefix, "_log_", format(Sys.Date(), "%Y%m%d"), ".log"))
+  logger = create.logger()
+  logfile(logger) = logFileName
+  level(logger) = "WARN"
   for (curGugunCode in guguns[,2]) {
     dongCodes = data.frame()
     result = data.frame()
