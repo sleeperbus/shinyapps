@@ -206,7 +206,7 @@ f_crawler = function(fromYear, toYear, prefix, f_name) {
 		info(logger, msg)
 
 		msgRemainTimes = round(as.numeric(remainTimes, units = "hours"), digits = 2)
-		msg = paste("Times remains:", msgRemainTimes)
+		msg = paste("Times remains:", msgRemainTimes, "hours")
 		message(msg)
 		info(logger, msg)
 
