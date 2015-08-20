@@ -106,7 +106,7 @@ f_getRent = function(dongCode, year, period) {
 	  apts = merge(aptInfo, prices, by="APT_CODE") 
 	  apts$SALE_YEAR = year
 	} else {
-    info(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
+    debug(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
 	  return(NULL)
 	}          	
 	
@@ -136,7 +136,7 @@ f_getTrade = function(dongCode, year, period) {
 	  apts = merge(aptInfo, prices, by="APT_CODE") 
 	  apts$SALE_YEAR = year
 	} else {
-    info(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
+    debug(logger, paste(paste(dongCode, year, period, sep = "-"), ": no prices"))
 	  return(NULL)
 	}          	
   apts = f_addInfo(apts)
@@ -171,25 +171,48 @@ f_dongToFile = function(dongCode, from, to, f_name) {
 		}
 		fileName = paste(paste(dongCode, srhYear, sep="_"), "rds", sep=".")
 		saveRDS(apts, paste("data", fileName, sep="/"))
-		debug(info, paste("successfully write to", fileName))
+		msg = paste("successfully write to", fileName)
+		debug(logger, msg)
 	}  
 }
 
-f_crawler = function(from, to, prefix, f_name) { 
-  logFileName = file.path(getwd(), paste0(prefix, "_log_", format(Sys.Date(), "%Y%m%d"), ".log"))
-  logger = create.logger()
-  logfile(logger) = logFileName
-  level(logger) = "WARN"
+f_crawler = function(fromYear, toYear, prefix, f_name) { 
+	msg = paste(fromYear, "~" , toYear, prefix, "started", sep = " ")
+	info(logger, msg)
+	startTime = Sys.time()
   for (curGugunCode in guguns[,2]) {
+	
     dongCodes = data.frame()
     result = data.frame()
     curDongs = subset(dongs, gugunCode == curGugunCode)
-    for (year in from:to) {
+    for (year in fromYear:toYear) {
       result = apply(as.data.frame(curDongs[,3]), 1, f_dongYearData, year, 
                      year, f_name)
       result = do.call("rbind", result)
       fileName = paste(paste(prefix, curGugunCode, year, sep="_"), "rds", sep=".")
       saveRDS(result, file.path("data", fileName))
     }
+		endTime = Sys.time()
+
+		gugunIdx = which(curGugunCode == guguns$gugunCode)
+		pct = round((gugunIdx / nrow(guguns)) * 100, 2)
+
+		timeTakes = difftime(endTime, startTime)
+		remainTimes = (nrow(guguns) - gugunIdx) * timeTakes
+
+		msgTimeTakes = round(as.numeric(timeTakes, units = "mins"))
+		msg = paste(curGugunCode, "takes", msgTimeTakes, "mins")
+		message(msg)
+		info(logger, msg)
+
+		msgRemainTimes = round(as.numeric(remainTimes, units = "hours"), digits = 2)
+		msg = paste("Times remains:", msgRemainTimes)
+		message(msg)
+		info(logger, msg)
+
+		message(paste0(pct, "% done.")) 
+		info(logger, paste0(pct, "% done.")) 
   } 
+	msg = paste(from, "~" , to, prefix, "ended", sep = " ")
+	info(logger, msg)
 }
