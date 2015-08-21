@@ -11,6 +11,8 @@ logger = create.logger()
 logfile(logger) = logFileName
 level(logger) = "INFO"
 
+savePath = file.path(getwd(), "data")
+
 # 국토부 실거래가 사이트에 접속해서 데이터를 가져온다.
 # qryType t 매매, r 전월세
 f_readUrl = function(
@@ -182,8 +184,8 @@ f_dongToFile = function(dongCode, from, to, f_name) {
 f_crawler = function(fromYear, toYear, prefix, f_name) { 
   msg = paste(fromYear, "~" , toYear, prefix, "started", sep = " ")
   info(logger, msg)
-  startTime = Sys.time()
   for (curGugunCode in guguns[,2]) { 
+    startTime = Sys.time()
     dongCodes = data.frame()
     result = data.frame()
     curDongs = subset(dongs, gugunCode == curGugunCode)
@@ -192,7 +194,7 @@ f_crawler = function(fromYear, toYear, prefix, f_name) {
                      year, f_name)
       result = do.call("rbind", result)
       fileName = paste(paste(prefix, curGugunCode, year, sep="_"), "rds", sep=".")
-      saveRDS(result, file.path("data", fileName))
+      saveRDS(result, file.path(savePath, fileName))
     }
     endTime = Sys.time()
     
