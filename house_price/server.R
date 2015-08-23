@@ -29,7 +29,7 @@ shinyServer(function(input, output, clientData, session){
         msg = paste0(codes, ": ", format(row), collapse = "<br />") 
       else msg = NULL  
     } else {
-      codes = c("아파트", "전용면적", "거래가", "보증금", "거래일")
+      codes = c("아파트", "전용면적", "보증금", "월세", "거래일")
       row = apts[apts$ID == df$ID, c("APT_NAME", "AREA", "TRADE_AMT", "MONTHLY", "SALE_DATE")]
       if (nrow(row) > 0)
         msg = paste0(codes, ": ", format(row), collapse = "<br />") 
