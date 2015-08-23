@@ -55,3 +55,11 @@ for (fileName in dir(dataPath)) {
     saveRDS(df, filePath)
   }
 }
+
+# 데이터 뒤지기
+files = dir("data", pattern = "t_11680")
+fileNames = sapply(files, function(file) file.path("data", file))
+result = lapply(fileNames, function(file) readRDS(file))
+result = do.call("rbind", result)
+
+
