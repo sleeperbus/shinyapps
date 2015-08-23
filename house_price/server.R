@@ -71,6 +71,12 @@ shinyServer(function(input, output, clientData, session){
     message("newType In")
     return(input$type)
   })
+  
+  # 선택된 전용면적 코드들 반환
+  newRealAreas = eventReactive(input$refreshButton, {
+    message("newRealAreas In")
+    return(input$realArea)
+  })
 
   # 구군 데이터를 반환한다.
 	gugunData = reactive({ 
@@ -113,7 +119,9 @@ shinyServer(function(input, output, clientData, session){
 		message("aptNames in")
 		apts = dongData() 
     if (is.null(apts)) return(NULL)
+    
 		aptNames = list()
+    apts = subset(apts, REAL_AREA %in% newRealAreas())
 		uniqueApts = apts[, c("APT_NAME", "APT_CODE")]
     uniqueApts = uniqueApts[with(uniqueApts, order(APT_NAME)), ]
 		uniqueApts = uniqueApts[!duplicated(uniqueApts),]
@@ -179,7 +187,7 @@ shinyServer(function(input, output, clientData, session){
 		realArea = input$realArea
 		
 		result = subset(apts, APT_CODE %in% aptCodes)
-		result = subset(result, REAL_AREA%in% realArea)
+		result = subset(result, REAL_AREA%in% newRealAreas())
 		result$APT_NAME = factor(result$APT_NAME, ordered=F)
 		result$GROUP = factor(result$GROUP)
 		
